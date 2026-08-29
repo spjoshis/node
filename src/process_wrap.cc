@@ -121,6 +121,9 @@ class ProcessWrap : public HandleWrap {
     // This property has always been set by JS land if we are in this code path.
     Local<Value> val;
     if (!stdio->Get(env->context(), handle_key).ToLocal(&val)) {
+      if (!env->isolate()->HasCaught()) {
+        THROW_ERR_INVALID_ARG_VALUE(env, "options.stdio is invalid");
+      }
       return Nothing<uv_stream_t*>();
     }
     Local<Object> handle = val.As<Object>();
@@ -147,11 +150,17 @@ class ProcessWrap : public HandleWrap {
     for (uint32_t i = 0; i < len; i++) {
       Local<Value> val;
       if (!stdios->Get(context, i).ToLocal(&val)) {
+        if (!env->isolate()->HasCaught()) {
+          THROW_ERR_INVALID_ARG_VALUE(env, "options.stdio is invalid");
+        }
         return Nothing<void>();
       }
       Local<Object> stdio = val.As<Object>();
       Local<Value> type;
       if (!stdio->Get(context, env->type_string()).ToLocal(&type)) {
+        if (!env->isolate()->HasCaught()) {
+          THROW_ERR_INVALID_ARG_VALUE(env, "options.stdio is invalid");
+        }
         return Nothing<void>();
       }
 
@@ -179,6 +188,9 @@ class ProcessWrap : public HandleWrap {
         Local<String> fd_key = env->fd_string();
         Local<Value> fd_value;
         if (!stdio->Get(context, fd_key).ToLocal(&fd_value)) {
+          if (!env->isolate()->HasCaught()) {
+            THROW_ERR_INVALID_ARG_VALUE(env, "options.stdio is invalid");
+          }
           return Nothing<void>();
         }
         CHECK(fd_value->IsNumber());
